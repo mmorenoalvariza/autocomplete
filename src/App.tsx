@@ -9,8 +9,8 @@ function App() {
   const [value, setValue] = useState('');
  const { isLoading, error, data } = useQuery({queryKey: ['characters', value], queryFn: () => fetchCharacters(value)});
 
-  const options = data?.results || [];
-  const filteredOptions = options.filter(option => value && option.name.toLowerCase().includes(value.toLowerCase()));
+  const options = value && data?.results || [];
+  
   const [selectedCharacter, setSelectedCharacter] = useState<Character | undefined>();
   return (<section className="block top-0">
     <div>
@@ -19,7 +19,7 @@ function App() {
        value={value}
        getLabel={(character) => character.name}
        onChange={setValue}
-       options={filteredOptions}
+       options={options}
        onSelect={(o) => setSelectedCharacter(o)} />
     </div>
     {selectedCharacter && <div className='my-40'>Selected character: {selectedCharacter.name} and he is {selectedCharacter.status}</div>}
