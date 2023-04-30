@@ -11,58 +11,14 @@ const isValidPair = (charA: string, charB: string) => {
   );
 };
 
-const recursiveNest = (s: string[]) => {
+const getProperNesting = (s: string, dontFix = false): string | false => {
   if (s.length === 0) {
     return s;
   }
-  if (s.length === 2) {
-    if (isValidPair(s[0], s[1])) {
-      return s;
-    }
-    return null;
-  }
-  if (s.length === 1) {
-    if (nestingChars.includes(s[1])) {
-      return null;
-    } else return s;
-  }
-  if (s.length > 2) {
-    return recursiveNest();
-  }
-};
-
-const getNest = (s: string) => {
-  const splitted = s.split("");
-  if (splitted.length > 2) {
-    const resp = recursiveNest(splitted);
-  }
-  return "";
-};
-
-const getProperNesting = (s: string) => {
-  if (s.length === 0) {
+  if (s.length === 1 && !nestingChars.includes(s)) {
     return s;
   }
-  if (s.length === 1) {
-    if (nestingChars.includes(s)) {
-      switch (s) {
-        case "(":
-          return "()";
-        case ")":
-          return "()";
-        case "{":
-          return "{}";
-        case "}":
-          return "{}";
-        case "[":
-          return "[]";
-        case "]":
-          return "[]";
-      }
-    } else {
-      return s;
-    }
-  }
+
   const splitted = s.split("");
   const stack = [splitted[0]];
   let response = [splitted[0]];
@@ -87,8 +43,39 @@ const getProperNesting = (s: string) => {
   if (stack.length === 0) {
     return response.join("");
   }
-  console.log("stack", stack);
-  console.log("res", response);
+  if (dontFix) {
+    return false;
+  }
+
+  let newResponse = s;
+  for (let i = stack.length - 1; i >= 0; i--) {
+    switch (stack[i]) {
+      case "}": {
+        newResponse = "{" + newResponse;
+        break;
+      }
+      case "{":
+        newResponse = newResponse + "}";
+        break;
+      case "]": {
+        newResponse = "[" + newResponse;
+        break;
+      }
+      case "[":
+        newResponse = newResponse + "]";
+        break;
+      case ")": {
+        newResponse = "(" + newResponse;
+        break;
+      }
+      case "(":
+        newResponse = newResponse + ")";
+        break;
+    }
+  }
+  if (newResponse.includes(s)) {
+    return getProperNesting(newResponse, true);
+  }
   return false;
 };
 describe("Nest", () => {
@@ -107,15 +94,13 @@ describe("Nest", () => {
     expect(getProperNesting("{ [] nice to see you [] }")).toBe(
       "{ [] nice to see you [] }"
     );
-    expect(getProperNesting("]-(")).toBe("[]-()");
+    expect(getProperNesting("]-(")).toBe("[]-()"); //Stack: (]
+    expect(getProperNesting("a()]-(")).toBe("[a()]-()");
+    expect(getProperNesting("]]-((")).toBe("[[]]-(())"); //Stack: ((]]
+    expect(getProperNesting("} { [()] (()v()) } ])")).toBe(
+      "([{} { [()] (()v()) } ])" // Stack: )]}
+    );
     expect(getProperNesting("[]-(")).toBe("[]-()");
-  });
-  it.skip("nests2", () => {
-    expect(getNest("")).toBe("");
-    expect(getNest("()[]")).toBe("()[]");
-    expect(getNest("[()]")).toBe("[()]");
-    expect(getNest("(()())")).toBe("(()())");
-    expect(getNest("]-(")).toBe("[]-()");
-    expect(getNest("]-(")).toBe("[]-()");
+    expect(getProperNesting("([{]]}")).toBe(false);
   });
 });
