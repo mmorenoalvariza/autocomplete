@@ -1,5 +1,8 @@
-import { FunctionComponent, useRef } from "react";
+import { FunctionComponent, useContext, useRef } from "react";
 import useComponentVisible from "../hooks/useComponentVisible";
+import { ThemeContext } from "../App";
+import React from "react";
+import Hoc from "./Hoc";
 type Option = { id: string | number };
 type Props<T> = {
   placeholder?: string;
@@ -12,6 +15,8 @@ type Props<T> = {
 
 const Autocomplete = <T extends Option>(props: Props<T>) => {
   const { ref, isVisible, setIsVisible } = useComponentVisible(true);
+  const val = useContext(ThemeContext);
+  console.log(props);
   const inputRef = useRef<HTMLInputElement>(null);
   const {
     placeholder = "",
@@ -109,4 +114,4 @@ const HighlightLabel: FunctionComponent<{ label: string; value: string }> = ({
   );
 };
 
-export default Autocomplete;
+export default Hoc(Autocomplete);
